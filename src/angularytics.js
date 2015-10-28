@@ -1,8 +1,9 @@
 // hi
 (function(){
     angular.module('angularytics', []).provider('Angularytics', function() {
-
         var eventHandlersNames = ['Google'];
+		var suppressPages = [];
+		
         this.setEventHandlers = function(handlers) {
             if (angular.isString(handlers)) {
                 handlers = [handlers];
@@ -12,6 +13,18 @@
                 eventHandlersNames.push(capitalizeHandler(handler))
             });
         };
+		
+        this.setSuppressPages = function(pagesList) {
+            if (!angular.isArray(pagesList)) {
+				// Invalid logging suppression list passed to angularytics, ignoring
+                return;
+            }
+
+            suppressPages = [];
+            angular.forEach(pagesList, function(pg) {
+                suppressPages.push(pg)
+            });
+        }
 
         var capitalizeHandler = function(handler) {
             return handler.charAt(0).toUpperCase() + handler.substring(1);
@@ -75,7 +88,17 @@
             // Event listening
             if(pageViewTrackingEnabled){
                 $rootScope.$on(pageChangeEvent, function() {
-                    service.trackPageView($location.url())
+	                var url = $location.url();
+
+	                for (i in suppressPages) {
+                        var pg = suppressPages[i];
+	                    if (url.substring(0,pg.length) === pg) {
+	                        //if (console) console.log("suppressed "+url);
+	                        return;
+	                    }
+	                }
+
+                    service.trackPageView(url);
                 });
             }
 

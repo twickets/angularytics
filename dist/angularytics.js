@@ -1,6 +1,15 @@
+/**
+ * The solution to tracking page views and events in a SPA with AngularJS
+ * @version v0.4.0 - 2015-10-28
+ * @link https://github.com/mgonto/angularytics
+ * @author Martin Gontovnikas <martin@gonto.com.ar>
+ * @license MIT License, http://www.opensource.org/licenses/MIT
+ */
+// hi
 (function () {
   angular.module('angularytics', []).provider('Angularytics', function () {
     var eventHandlersNames = ['Google'];
+    var suppressPages = [];
     this.setEventHandlers = function (handlers) {
       if (angular.isString(handlers)) {
         handlers = [handlers];
@@ -10,6 +19,16 @@
         eventHandlersNames.push(capitalizeHandler(handler));
       });
     };
+    this.setSuppressPages = function (pagesList) {
+      if (!angular.isArray(pagesList)) {
+        // Invalid logging suppression list passed to angularytics, ignoring
+        return;
+      }
+      suppressPages = [];
+      angular.forEach(pagesList, function (pg) {
+        suppressPages.push(pg);
+      });
+    };
     var capitalizeHandler = function (handler) {
       return handler.charAt(0).toUpperCase() + handler.substring(1);
     };
@@ -17,11 +36,16 @@
     this.setPageChangeEvent = function (newPageChangeEvent) {
       pageChangeEvent = newPageChangeEvent;
     };
+    var pageViewTrackingEnabled = true;
+    this.disablePageViewTracking = function () {
+      pageViewTrackingEnabled = false;
+    };
     this.$get = [
       '$injector',
       '$rootScope',
       '$location',
       function ($injector, $rootScope, $location) {
+        // Helper methods
         var eventHandlers = [];
         angular.forEach(eventHandlersNames, function (handler) {
           eventHandlers.push($injector.get('Angularytics' + handler + 'Handler'));
@@ -32,6 +56,7 @@
           });
         };
         var service = {};
+        // Just dummy function so that it's instantiated on app creation
         service.init = function () {
         };
         service.trackEvent = function (category, action, opt_label, opt_value, opt_noninteraction) {
@@ -55,9 +80,20 @@
             }
           });
         };
-        $rootScope.$on(pageChangeEvent, function () {
-          service.trackPageView($location.url());
-        });
+        // Event listening
+        if (pageViewTrackingEnabled) {
+          $rootScope.$on(pageChangeEvent, function () {
+            var url = $location.url();
+            for (i in suppressPages) {
+              var pg = suppressPages[i];
+              if (url.substring(0, pg.length) === pg) {
+                //if (console) console.log("suppressed "+url);
+                return;
+              }
+            }
+            service.trackPageView(url);
+          });
+        }
         return service;
       }
     ];
