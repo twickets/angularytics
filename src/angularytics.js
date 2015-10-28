@@ -1,3 +1,4 @@
+// hi
 (function(){
     angular.module('angularytics', []).provider('Angularytics', function() {
 
