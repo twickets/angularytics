@@ -85,9 +85,7 @@
           $rootScope.$on(pageChangeEvent, function () {
             var url = $location.url();
             for (i in suppressPages) {
-              var pg = suppressPages[i];
-              if (url.substring(0, pg.length) === pg) {
-                //if (console) console.log("suppressed "+url);
+              if (new RegExp(suppressPages[i]).test(url)) {
                 return;
               }
             }
