@@ -72,6 +72,7 @@
             service.trackPageView = function(url) {
                 forEachHandlerDo(function(handler) {
                     if (url) {
+                        //if (console) console.log("tracking url "+url);
                         handler.trackPageView(url);
                     }
                 });
@@ -92,10 +93,12 @@
 
 	                for (i in suppressPages) {
                         if (new RegExp(suppressPages[i]).test(url)) {
+                            //if (console) console.log("skipping auto tracking of url "+url);
 	                        return;
 	                    }
 	                }
 
+                    //if (console) console.log("auto tracking url "+url);
                     service.trackPageView(url);
                 });
             }

@@ -1,6 +1,6 @@
 /**
  * The solution to tracking page views and events in a SPA with AngularJS
- * @version v0.4.0 - 2015-10-28
+ * @version v0.4.0 - 2015-10-30
  * @link https://github.com/mgonto/angularytics
  * @author Martin Gontovnikas <martin@gonto.com.ar>
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -69,6 +69,7 @@
         service.trackPageView = function (url) {
           forEachHandlerDo(function (handler) {
             if (url) {
+              //if (console) console.log("tracking url "+url);
               handler.trackPageView(url);
             }
           });
@@ -86,9 +87,11 @@
             var url = $location.url();
             for (i in suppressPages) {
               if (new RegExp(suppressPages[i]).test(url)) {
+                //if (console) console.log("skipping auto tracking of url "+url);
                 return;
               }
             }
+            //if (console) console.log("auto tracking url "+url);
             service.trackPageView(url);
           });
         }
